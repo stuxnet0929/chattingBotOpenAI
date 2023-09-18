@@ -345,8 +345,6 @@ export default function Conversation({
             }`}
           >
             <div >
-
-              
               <ListItemAvatar
                 className="flex justify-center cursor-pointer"
                 onClick={() => {
