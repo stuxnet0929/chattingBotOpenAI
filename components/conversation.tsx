@@ -1,5 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
-import { List, ListItem, ListItemText, Typography, ListSubheader, ListItemAvatar, Avatar } from "@mui/material";
+import {
+  List,
+  ListItem,
+  ListItemText,
+  Typography,
+  ListSubheader,
+  ListItemAvatar,
+  Avatar,
+} from "@mui/material";
 import FolderIcon from "@mui/icons-material/Folder";
 import { Configuration, OpenAIApi } from "openai";
 import { createParser } from "eventsource-parser";
@@ -11,11 +19,22 @@ import { Config } from "@/common/config";
 import HistoryEditor from "@/components/historyeditor";
 import HeadshotPicker from "@/components/headshotpicker";
 
-export async function handleSSE(response: Response, onMessage: (message: string) => void) {
+export async function handleSSE(
+  response: Response,
+  onMessage: (message: string) => void
+) {
   if (!response.ok) {
     const error = await response.json().catch(() => null);
-    console.log(error ? JSON.stringify(error) : `${response.status} ${response.statusText}`);
-    onMessage(error ? JSON.stringify(error) : `${response.status} ${response.statusText}`);
+    console.log(
+      error
+        ? JSON.stringify(error)
+        : `${response.status} ${response.statusText}`
+    );
+    onMessage(
+      error
+        ? JSON.stringify(error)
+        : `${response.status} ${response.statusText}`
+    );
     onMessage("[DONE]");
     return;
   }
@@ -39,7 +58,9 @@ export async function handleSSE(response: Response, onMessage: (message: string)
     parser.feed(str);
   }
 }
-export async function* iterableStreamAsync(stream: ReadableStream): AsyncIterableIterator<Uint8Array> {
+export async function* iterableStreamAsync(
+  stream: ReadableStream
+): AsyncIterableIterator<Uint8Array> {
   const reader = stream.getReader();
   try {
     while (true) {
@@ -98,7 +119,9 @@ export default function Conversation({
       const config = await Config.GetConfigInstanceAsync();
       //console.log(config);
       console.log("processing prompt:" + prompt);
-      console.log("add user prompt question message AND assistant placeholder response first");
+      console.log(
+        "add user prompt question message AND assistant placeholder response first"
+      );
       // eslint-disable-next-line react-hooks/exhaustive-deps
       const newmessages = [
         ...SessionManager.currentSession.messages,
@@ -127,8 +150,12 @@ export default function Conversation({
       //this will check the 2nd to last message to see if it's from the user
       if (SessionManager.currentSession.messages.slice(-2)[0].role != "user") {
         //this is an error, the last message should the one sent from the user
-        console.log("error, the role of the last message is assistant. stop the processing");
-        setToastmessage("error, the role of the last message is assistant. stop the processing");
+        console.log(
+          "error, the role of the last message is assistant. stop the processing"
+        );
+        setToastmessage(
+          "error, the role of the last message is assistant. stop the processing"
+        );
         setToastopen(true);
         return;
       }
@@ -156,7 +183,9 @@ export default function Conversation({
         if (message === "[DONE]") {
           console.log("try to save session");
           const last_message =
-            SessionManager.currentSession.messages[SessionManager.currentSession.messages.length - 1];
+            SessionManager.currentSession.messages[
+              SessionManager.currentSession.messages.length - 1
+            ];
           last_message.completets = Math.floor(Date.now() / 1000);
           //process the content
           //get rid of italic items
@@ -169,12 +198,16 @@ export default function Conversation({
           //
           //since it's done, try to ask openai for session name
           //
-          const currentSessionName = SessionManager.currentSession.sessionName.trim();
+          const currentSessionName =
+            SessionManager.currentSession.sessionName.trim();
           if (currentSessionName == "New Session") {
             let asknamemessage = SessionManager.currentSession
               .GetMessagesWithTokenLimit(2000)
               .map(({ role, content }) => ({ role, content }));
-            asknamemessage.push({ role: "user", content: "name this session concisely with less than 5 tokens" });
+            asknamemessage.push({
+              role: "user",
+              content: "name this session concisely with less than 5 tokens",
+            });
             fetch(`${host}/v1/chat/completions`, {
               method: "POST",
               headers: {
@@ -192,7 +225,9 @@ export default function Conversation({
             })
               .then((respname) => respname.json())
               .then((data) => {
-                console.log(`the result of the naming task  is:${JSON.stringify(data)}`);
+                console.log(
+                  `the result of the naming task  is:${JSON.stringify(data)}`
+                );
                 let returnedName = data.choices[0].message.content;
                 returnedName = TrimAndGetTextInQuote(returnedName);
                 SessionManager.currentSession.sessionName = returnedName;
@@ -237,7 +272,9 @@ export default function Conversation({
     //only when base change the prompt, will it trigger this handle function
     if (prompt && prompt.value != "") {
       handlePrompt(prompt.value);
-      console.log(`conversation got the prompt prop changes:${JSON.stringify(prompt)}`);
+      console.log(
+        `conversation got the prompt prop changes:${JSON.stringify(prompt)}`
+      );
     }
   }, [prompt]);
   //this loads session history
@@ -261,9 +298,9 @@ export default function Conversation({
   }, [messages]);
 
   return (
-    <>
+    <div className="flex justify-center items-start">
       <List
-        className={`flex-1 bg-yellow-50 w-full overflow-auto min-h-[40vh] pb-10 scrollbar-thin scrollbar-thumb-gray-900 scrollbar-track-gray-100`}
+        className={`max-w-7xl flex-1 bg-transprent w-full overflow-auto min-h-[80vh] pb-10 scrollbar-thin scrollbar-thumb-gray-900 scrollbar-track-gray-100 items-start`}
       >
         <ListSubheader
           className="bg-white/10"
@@ -302,40 +339,54 @@ export default function Conversation({
             key={`message_${index}`}
             alignItems="flex-start"
             className={`flex justify-start ${
-              message.role === "assistant" || message.role === "system" ? "flex-row " : "flex-row-reverse"
+              message.role === "assistant" || message.role === "system"
+                ? "flex-row "
+                : "flex-row-reverse"
             }`}
           >
-            <div>
+            <div >
+
+              
               <ListItemAvatar
                 className="flex justify-center cursor-pointer"
                 onClick={() => {
-                  if (message.role === "assistant" || message.role === "system") {
+                  if (
+                    message.role === "assistant" ||
+                    message.role === "system"
+                  ) {
                     setHeadshotopen(true);
                   }
                 }}
               >
                 <Avatar
-                  className="w-20 h-20"
+                  className="w-18 h-18"
                   alt="Remy Sharp"
                   src={`${
                     message.role === "assistant" || message.role === "system"
-                      ? SessionManager.currentSession.aiheadshotimg
+                      ? "/headshots/jesus.jpg" //SessionManager.currentSession.aiheadshotimg
                       : ""
                   }`}
                 />
               </ListItemAvatar>
               <div className="text-center">
-                {message.role === "assistant" || message.role === "system" ? ainame : ""}
+                {message.role === "assistant" || message.role === "system"
+                  ? ""
+                  : ""}
               </div>
             </div>
             <div className="w-3 h-3"></div>
             <ListItemText
-              primary={<MyMessageBlock rawtext={message.content} ainame={"assistant"}></MyMessageBlock>}
+              primary={
+                <MyMessageBlock
+                  rawtext={message.content}
+                  ainame={"assistant"}
+                ></MyMessageBlock>
+              }
               secondary={`${getFormattedDateTime(message.completets)}`}
               className={`rounded-t-xl p-4 cursor-pointer ${
                 message.role === "assistant" || message.role === "system"
-                  ? "rounded-br-xl bg-blue-100 text-black text-left flex-1"
-                  : "rounded-bl-xl bg-green-100 text-black text-left flex-1 max-w-full min-w-0"
+                  ? "rounded-br-xl bg-gray-200 text-black text-left flex-1 mr-16"
+                  : "rounded-bl-xl bg-blue-500 text-black text-left flex-1 max-w-full min-w-0 ml-16"
               } `}
               onClick={() => {
                 setChangemessagerequest({ index, content: message.content });
@@ -344,7 +395,7 @@ export default function Conversation({
             />
           </ListItem>
         ))}
-        <div ref={target_bottomRef} className="text-yellow-50">
+        <div ref={target_bottomRef} className="text-transparent">
           thebottom
         </div>
       </List>
@@ -371,6 +422,6 @@ export default function Conversation({
           setHeadshotopen(false);
         }}
       />
-    </>
+    </div>
   );
 }

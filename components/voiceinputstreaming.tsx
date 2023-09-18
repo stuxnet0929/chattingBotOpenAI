@@ -119,7 +119,7 @@ const VoiceInputStreaming = ({ sliceduration, sendbacktext }: any) => {
   }, [isRecording, stream]);
 
   return (
-    <Box className="absolute z-10 right-32 bottom-32 m-1">
+    <Box className=" z-10 right-32 bottom-32">
       <Button
         onClick={isRecording ? StopRecording : StartRecording}
         variant="contained"

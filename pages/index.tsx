@@ -131,13 +131,15 @@ const DrawerHeader = styled("div")(({ theme }) => ({
 export default function PersistentDrawerLeft() {
   const theme = useTheme();
   const backendCallingInterval = 20000; //20 seconds
-  const [open, setOpen] = React.useState(true); //this is to control sidebar open by default
+  const [open, setOpen] = React.useState(false); //this is to control sidebar open by default
   const [openDialogConfig, setOpenDialogConfig] = React.useState(false); //control config dialog to show
-  const [openDialogCharacterEditor, setOpenDialogCharacterEditor] = React.useState(false); //control config dialog to show
+  const [openDialogCharacterEditor, setOpenDialogCharacterEditor] =
+    React.useState(false); //control config dialog to show
   const [opendialog, setOpendialog] = React.useState(false);
   const [dialogMessage, setDialogMessage] = React.useState("");
-  const [voiceoverChecked, setvoiceoverChecked] = React.useState(false);
-  const [sessionlistrefreshtimestamp, setSessionlistrefreshtimestamp] = React.useState(0);
+  const [voiceoverChecked, setvoiceoverChecked] = React.useState(true);
+  const [sessionlistrefreshtimestamp, setSessionlistrefreshtimestamp] =
+    React.useState(0);
 
   //this is to show current session name on the top
   const [sessionname, setSessionname] = React.useState("");
@@ -157,7 +159,9 @@ export default function PersistentDrawerLeft() {
     //console.log("inside interval model: " + SessionManager.currentSession.model);
     if (SessionManager.currentSession.model.toLowerCase() === "chatgpt") {
       apiEndpoint = "https://api.openai.com/v1/models";
-    } else if (SessionManager.currentSession.model.toLowerCase().includes("kobold")) {
+    } else if (
+      SessionManager.currentSession.model.toLowerCase().includes("kobold")
+    ) {
       apiEndpoint = "/api/v1/model";
     }
     fetch(apiEndpoint, {
@@ -235,39 +239,46 @@ export default function PersistentDrawerLeft() {
     setSessionlistrefreshtimestamp(sessionlistrefreshtimestamp + 1);
   };
   return (
-    <Box className="flex">
-      <CssBaseline />
-      <AppBar position="fixed" open={open}>
-        <Toolbar>
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            onClick={() => {
-              setOpen(true);
-            }}
-            edge="start"
-            sx={{ mr: 2, ...(open && { display: "none" }) }}
-          >
-            <MenuIcon />
-          </IconButton>
-          {/* Modify session name */}
-          <EditableLabel text={sessionname} onModified={RefreshSessionList} />
-          <IconButton
-            onClick={() => {
-              console.log("popup character editor");
-              setOpenDialogCharacterEditor(true);
-            }}
-            className="ml-4"
-            color="secondary"
-            aria-label="Character"
-          >
-            <ContactsIcon />
-          </IconButton>
-          <div className="flex-1 flex justify-end">
-            {/* Modify session backend */}
-            <div className="flex items-center mr-4">
-              <Box className="text-xs">[{modelname}]</Box>
-              <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
+    <div>
+      <div
+        className="bg-image"
+        style={{
+          position: "absolute",
+          width: "100vw",
+          height: "100vh",
+        }}
+      />
+      <Box className="flex">
+        <CssBaseline />
+        <AppBar position="fixed" open={open}>
+          <Toolbar>
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              onClick={() => {
+                setOpen(true);
+              }}
+              edge="start"
+              sx={{ mr: 2, ...(open && { display: "none" }) }}
+            >
+              <MenuIcon />
+            </IconButton>
+            <EditableLabel text={sessionname} onModified={RefreshSessionList} />
+            <IconButton
+              onClick={() => {
+                console.log("popup character editor");
+                setOpenDialogCharacterEditor(true);
+              }}
+              className="ml-4"
+              color="secondary"
+              aria-label="Character"
+            >
+              <ContactsIcon />
+            </IconButton>
+            <div className="flex-1 flex justify-end">
+              <div className="flex items-center mr-4">
+                {/* <Box className="text-xs">[{modelname}]</Box> */}
+                {/* <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
                 <Select
                   sx={{
                     bgcolor: "white",
@@ -279,7 +290,9 @@ export default function PersistentDrawerLeft() {
                   value={model}
                   onChange={async (event: any) => {
                     SessionManager.currentSession.model = event.target.value;
-                    await SessionManager.SaveSessionToJson(SessionManager.currentSession);
+                    await SessionManager.SaveSessionToJson(
+                      SessionManager.currentSession
+                    );
                     setModel(SessionManager.currentSession.model);
                     setConnected(false);
                   }}
@@ -288,119 +301,124 @@ export default function PersistentDrawerLeft() {
                   <MenuItem value={"koboldmc"}>koboldmc</MenuItem>
                   <MenuItem value={"ChatGPT"}>ChatGPT</MenuItem>
                 </Select>
-              </FormControl>
-              {connected ? <WifiIcon /> : <WifiOffIcon />}
+              </FormControl> */}
+                {connected ? <WifiIcon /> : <WifiOffIcon />}
+              </div>
+              <FormControlLabel
+                control={
+                  <GreenSwitch
+                    color="default"
+                    checked={voiceoverChecked}
+                    onChange={async () => {
+                      setvoiceoverChecked(!voiceoverChecked);
+                      //save this to config
+                      let config = await Config.GetConfigInstanceAsync();
+                      config.voiceover = !voiceoverChecked;
+                      await config.SaveAsync();
+                      //tell conversation to clear audiotext
+                    }}
+                  />
+                }
+                label="Turn on voice-over"
+              />
             </div>
-            {/* Turn voice-over on/off */}
-            <FormControlLabel
-              control={
-                <GreenSwitch
-                  color="default"
-                  checked={voiceoverChecked}
-                  onChange={async () => {
-                    setvoiceoverChecked(!voiceoverChecked);
-                    //save this to config
-                    let config = await Config.GetConfigInstanceAsync();
-                    config.voiceover = !voiceoverChecked;
-                    await config.SaveAsync();
-                    //tell conversation to clear audiotext
-                  }}
-                />
-              }
-              label="Turn on voice-over"
-            />
-          </div>
-        </Toolbar>
-      </AppBar>
-      {/* Left sidebar */}
-      <Drawer
-        sx={{
-          width: drawerWidth,
-          flexShrink: 0,
-          "& .MuiDrawer-paper": {
+          </Toolbar>
+        </AppBar>
+        <Drawer
+          sx={{
             width: drawerWidth,
-            boxSizing: "border-box",
-          },
-        }}
-        variant="persistent"
-        anchor="left"
-        open={open}
-      >
-        {/* 3bar menu icon */}
-        <DrawerHeader>
-          <IconButton
-            onClick={() => {
-              setOpen(false);
-            }}
-          >
-            {theme.direction === "ltr" ? <ChevronLeftIcon /> : <ChevronRightIcon />}
-          </IconButton>
-        </DrawerHeader>
-        <Divider />
-        <Box className="h-full flex flex-col justify-between overflow-y-hidden">
-          {/* sessionlist */}
-          <SessionList
-            className="overflow-y-auto scrollbar-thin scrollbar-thumb-gray-900 scrollbar-track-gray-100"
-            refreshtimestamp={sessionlistrefreshtimestamp}
-          />
-          {/* sidebar buttons */}
-          <List>
-            <Divider />
-            {/* Login button */}
-            <ListItem disablePadding>
-              <ListItemButton
-                onClick={() => {
-                  console.log("Login clicked");
-                }}
-              >
-                <ListItemIcon>
-                  <LoginIcon />
-                </ListItemIcon>
-                <ListItemText primary={"Login"} />
-              </ListItemButton>
-            </ListItem>
-            {/* Settings button */}
-            <ListItem disablePadding>
-              <ListItemButton
-                onClick={() => {
-                  console.log("Config clicked");
-                  setOpenDialogConfig(true);
-                }}
-              >
-                <ListItemIcon>
-                  <TuneIcon />
-                </ListItemIcon>
-                <ListItemText primary={"Settings"} />
-              </ListItemButton>
-            </ListItem>
-          </List>
-        </Box>
-      </Drawer>
-      {/* Settings dialog */}
-      <DialogConfig
-        open={openDialogConfig}
-        handleClose={() => {
-          setOpenDialogConfig(false);
-          backendProbe();
-        }}
-        refreshindexpageconfig={RefreshIndexPageConfig}
-      />
-      {/* chat area */}
-      <Main className="h-screen p-0 flex flex-col justify-start" open={open}>
-        <DrawerHeader />
-        {/*this is the main chat area                       control chat window               control chat window*/}
-        {model == "ChatGPT" ? (
-          <Conversation
-            prompt={prompt}
-            voiceover={voiceoverChecked}
-            initialmessages={SessionManager.currentSession.messages}
-            initialainame={SessionManager.currentSession.ainame}
-            refreshsessionlist={RefreshSessionList}
-          />
-        ) : (
-          <></>
-        )}
-        {model == "kobold" ? (
+            flexShrink: 0,
+            "& .MuiDrawer-paper": {
+              width: drawerWidth,
+              boxSizing: "border-box",
+            },
+          }}
+          variant="persistent"
+          anchor="left"
+          open={open}
+        >
+          {/* 3bar menu icon */}
+          <DrawerHeader>
+            <IconButton
+              onClick={() => {
+                setOpen(false);
+              }}
+            >
+              {theme.direction === "ltr" ? (
+                <ChevronLeftIcon />
+              ) : (
+                <ChevronRightIcon />
+              )}
+            </IconButton>
+          </DrawerHeader>
+          <Divider />
+          <Box className="h-full flex flex-col justify-between overflow-y-hidden">
+            {/* sessionlist */}
+            <SessionList
+              className="overflow-y-auto scrollbar-thin scrollbar-thumb-gray-900 scrollbar-track-gray-100"
+              refreshtimestamp={sessionlistrefreshtimestamp}
+            />
+            {/* sidebar buttons */}
+            <List>
+              <Divider />
+              {/* Login button */}
+              <ListItem disablePadding>
+                <ListItemButton
+                  onClick={() => {
+                    console.log("Login clicked");
+                  }}
+                >
+                  <ListItemIcon>
+                    <LoginIcon />
+                  </ListItemIcon>
+                  <ListItemText primary={"Login"} />
+                </ListItemButton>
+              </ListItem>
+              {/* Settings button */}
+              <ListItem disablePadding>
+                <ListItemButton
+                  onClick={() => {
+                    console.log("Config clicked");
+                    setOpenDialogConfig(true);
+                  }}
+                >
+                  <ListItemIcon>
+                    <TuneIcon />
+                  </ListItemIcon>
+                  <ListItemText primary={"Settings"} />
+                </ListItemButton>
+              </ListItem>
+            </List>
+          </Box>
+        </Drawer>
+        {/* Settings dialog */}
+        <DialogConfig
+          open={openDialogConfig}
+          handleClose={() => {
+            setOpenDialogConfig(false);
+            backendProbe();
+          }}
+          refreshindexpageconfig={RefreshIndexPageConfig}
+        />
+        {/* chat area */}
+        <Main
+          className="h-screen p-0 flex flex-col justify-between"
+          open={open}
+        >
+          <DrawerHeader />
+          {/*this is the main chat area                       control chat window               control chat window*/}
+          {model == "ChatGPT" ? (
+            <Conversation
+              prompt={prompt}
+              voiceover={voiceoverChecked}
+              initialmessages={SessionManager.currentSession.messages}
+              initialainame={SessionManager.currentSession.ainame}
+              refreshsessionlist={RefreshSessionList}
+            />
+          ) : (
+            <></>
+          )}
+          {/* {model == "kobold" ? (
           <Conversationllmws
             prompt={prompt}
             voiceover={voiceoverChecked}
@@ -421,59 +439,64 @@ export default function PersistentDrawerLeft() {
           />
         ) : (
           <></>
-        )}
+        )} */}
 
-        {/*this is the input area with buttons*/}
-        <Box className="w-full min-h-[130px] flex">
-          <div className="flex-1 ml-1">
-            <VoiceInputStreaming
-              sliceduration={1000} //this only works for voiceinputstreaming
-              sendbacktext={(text: string) => {
-                setMessage(text);
-              }}
-            />
-            <TextField
-              fullWidth
-              multiline
-              minRows="4"
-              id="outlined-basic"
-              label={`Token: ${estimateTokens(message)}, Press [${
-                myconfig.ctrlenter ? "Ctrl/Shift+Enter" : "Enter"
-              }] to submit`}
-              variant="outlined"
-              value={message}
-              onChange={(e) => {
-                setMessage(e.target.value);
-              }}
-              onKeyDown={async (e) => {
-                // console.log(
-                //   `onKeyDown checking ctrlenter: ${myconfig.ctrlenter}`
-                // );
-                if (e.keyCode == 13 && (e.ctrlKey || e.shiftKey || !myconfig.ctrlenter)) {
-                  console.log(`send by enter or ctrlenter`);
-                  e.preventDefault();
-                  setPrompt({ value: message });
-                  setMessage("");
-                }
-              }}
-            />
-          </div>
-          {/*this is prompt buttons*/}
-          <Box className="w-[220px] gap-1 p-1 grid grid-cols-3 bg-blue">
-            <Button
-              id="generate"
-              variant="contained"
-              disabled={!connected}
-              onClick={() => {
-                //console.log("gen clicked: message is: " + message);
-                setPrompt({ value: message });
-                setMessage("");
-                //console.log("prompt is:" + JSON.stringify(prompt));
-              }}
-            >
-              Gen
-            </Button>
-            <Button
+          {/*this is the input area with buttons*/}
+
+          <div className="flex justify-center">
+            <Box className="w-full min-h-[130px] flex max-w-7xl">
+              <div className="flex-1 ml-1">
+                <TextField
+                  fullWidth
+                  multiline
+                  minRows="4"
+                  id="outlined-basic"
+                  label={`Token: ${estimateTokens(message)}, Press [${
+                    myconfig.ctrlenter ? "Ctrl/Shift+Enter" : "Enter"
+                  }] to submit`}
+                  variant="outlined"
+                  value={message}
+                  onChange={(e) => {
+                    setMessage(e.target.value);
+                  }}
+                  onKeyDown={async (e) => {
+                    // console.log(
+                    //   `onKeyDown checking ctrlenter: ${myconfig.ctrlenter}`
+                    // );
+                    if (
+                      e.keyCode == 13 &&
+                      (e.ctrlKey || e.shiftKey || !myconfig.ctrlenter)
+                    ) {
+                      console.log(`send by enter or ctrlenter`);
+                      e.preventDefault();
+                      setPrompt({ value: message });
+                      setMessage("");
+                    }
+                  }}
+                />
+              </div>
+              {/*this is prompt buttons*/}
+              <Box className="w-[130px] gap-1 p-1 grid grid-rows-2 bg-blue">
+                <VoiceInputStreaming
+                  sliceduration={1000} //this only works for voiceinputstreaming
+                  sendbacktext={(text: string) => {
+                    setMessage(text);
+                  }}
+                />
+                <Button
+                  id="generate"
+                  variant="contained"
+                  disabled={!connected}
+                  onClick={() => {
+                    //console.log("gen clicked: message is: " + message);
+                    setPrompt({ value: message });
+                    setMessage("");
+                    //console.log("prompt is:" + JSON.stringify(prompt));
+                  }}
+                >
+                  Gen
+                </Button>
+                {/* <Button
               variant="outlined"
               onClick={async () => {
                 //remove the last message
@@ -483,17 +506,19 @@ export default function PersistentDrawerLeft() {
               }}
             >
               R.Back
-            </Button>
-            <Button
-              variant="outlined"
-              onClick={() => {
-                setDialogMessage("Do you want to delete all messages from this session?");
-                setOpendialog(true);
-              }}
-            >
-              Reset
-            </Button>
-            <Button
+            </Button> */}
+                <Button
+                  variant="outlined"
+                  onClick={() => {
+                    setDialogMessage(
+                      "Do you want to delete all messages from this session?"
+                    );
+                    setOpendialog(true);
+                  }}
+                >
+                  Reset
+                </Button>
+                {/* <Button
               variant="outlined"
               onClick={async () => {
                 console.log("TEST clicked");
@@ -517,81 +542,96 @@ export default function PersistentDrawerLeft() {
               }}
             >
               TEST3
-            </Button>
-          </Box>
-        </Box>
-        <Dialog
-          open={opendialog}
-          onClose={() => {
-            setOpendialog(false);
-          }}
-        >
-          <DialogTitle>Clean up</DialogTitle>
-          <DialogContent>{dialogMessage}</DialogContent>
-          <DialogActions>
-            <Button
-              onClick={() => {
-                setOpendialog(false);
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={async () => {
-                await SessionManager.ResetSessionToOriginal(SessionManager.currentSession.sessionId);
-                console.log("Reset session to original");
-                RefreshSessionList();
-                setOpendialog(false);
-              }}
-              autoFocus
-            >
-              OK
-            </Button>
-          </DialogActions>
-        </Dialog>
-        <CharacterEditor
-          open={openDialogCharacterEditor}
-          handleClose={(allfields: string, firstmessage: string, headshoturl: string, ainame: string) => {
-            //console.log(`index page got allfields: ${allfields}`);
-            if (allfields && allfields != "") {
-              console.log("try to load characters to currentsession");
-              if (SessionManager.currentSession.messages.length > 0) {
-                SessionManager.currentSession.ainame = ainame;
-                SessionManager.currentSession.username = "you";
-                SessionManager.currentSession.aiheadshotimg = headshoturl;
-                SessionManager.currentSession.messages[0].content = allfields;
-                //check if there's a first message
-                if (
-                  SessionManager.currentSession.messages.length > 1 &&
-                  SessionManager.currentSession.messages[1].role == "assistant" &&
-                  firstmessage != ""
-                ) {
-                  SessionManager.currentSession.messages[1].content = firstmessage;
+            </Button> */}
+              </Box>
+            </Box>
+          </div>
+          <Dialog
+            open={opendialog}
+            onClose={() => {
+              setOpendialog(false);
+            }}
+          >
+            <DialogTitle>Clean up</DialogTitle>
+            <DialogContent>{dialogMessage}</DialogContent>
+            <DialogActions>
+              <Button
+                onClick={() => {
+                  setOpendialog(false);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={async () => {
+                  await SessionManager.ResetSessionToOriginal(
+                    SessionManager.currentSession.sessionId
+                  );
+                  console.log("Reset session to original");
+                  RefreshSessionList();
+                  setOpendialog(false);
+                }}
+                autoFocus
+              >
+                OK
+              </Button>
+            </DialogActions>
+          </Dialog>
+          <CharacterEditor
+            open={openDialogCharacterEditor}
+            handleClose={(
+              allfields: string,
+              firstmessage: string,
+              headshoturl: string,
+              ainame: string
+            ) => {
+              //console.log(`index page got allfields: ${allfields}`);
+              if (allfields && allfields != "") {
+                console.log("try to load characters to currentsession");
+                if (SessionManager.currentSession.messages.length > 0) {
+                  SessionManager.currentSession.ainame = ainame;
+                  SessionManager.currentSession.username = "you";
+                  SessionManager.currentSession.aiheadshotimg = headshoturl;
+                  SessionManager.currentSession.messages[0].content = allfields;
+                  //check if there's a first message
+                  if (
+                    SessionManager.currentSession.messages.length > 1 &&
+                    SessionManager.currentSession.messages[1].role ==
+                      "assistant" &&
+                    firstmessage != ""
+                  ) {
+                    SessionManager.currentSession.messages[1].content =
+                      firstmessage;
+                  }
+                  SessionManager.SaveSessionToJson(
+                    SessionManager.currentSession
+                  );
+                } else {
+                  const messagesystem = new Message({
+                    role: "system",
+                    content: allfields,
+                    completets: Math.floor(Date.now() / 1000),
+                  });
+                  const messageassistant = new Message({
+                    role: "assistant",
+                    content: firstmessage,
+                    completets: Math.floor(Date.now() / 1000) + 1,
+                  });
+                  SessionManager.currentSession.ainame = ainame;
+                  SessionManager.currentSession.username = "you";
+                  SessionManager.currentSession.aiheadshotimg = headshoturl;
+                  SessionManager.currentSession.messages.push(messagesystem);
+                  SessionManager.currentSession.messages.push(messageassistant);
+                  SessionManager.SaveSessionToJson(
+                    SessionManager.currentSession
+                  );
                 }
-                SessionManager.SaveSessionToJson(SessionManager.currentSession);
-              } else {
-                const messagesystem = new Message({
-                  role: "system",
-                  content: allfields,
-                  completets: Math.floor(Date.now() / 1000),
-                });
-                const messageassistant = new Message({
-                  role: "assistant",
-                  content: firstmessage,
-                  completets: Math.floor(Date.now() / 1000) + 1,
-                });
-                SessionManager.currentSession.ainame = ainame;
-                SessionManager.currentSession.username = "you";
-                SessionManager.currentSession.aiheadshotimg = headshoturl;
-                SessionManager.currentSession.messages.push(messagesystem);
-                SessionManager.currentSession.messages.push(messageassistant);
-                SessionManager.SaveSessionToJson(SessionManager.currentSession);
               }
-            }
-            setOpenDialogCharacterEditor(false);
-          }}
-        />
-      </Main>
-    </Box>
+              setOpenDialogCharacterEditor(false);
+            }}
+          />
+        </Main>
+      </Box>
+    </div>
   );
 }
