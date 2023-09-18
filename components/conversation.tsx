@@ -361,7 +361,7 @@ export default function Conversation({
                   alt="Remy Sharp"
                   src={`${
                     message.role === "assistant" || message.role === "system"
-                      ? "/headshots/jesus2.jpg"
+                      ? "/headshots/jesus4.jpg"
                       : ""
                   }`}
                 />
